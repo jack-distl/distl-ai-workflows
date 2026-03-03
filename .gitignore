@@ -1,0 +1,10 @@
+# Environment variables and secrets
+.env
+
+# Google OAuth credentials
+credentials.json
+token.json
+
+# Temporary processing files
+.tmp/*
+!.tmp/.gitkeep
