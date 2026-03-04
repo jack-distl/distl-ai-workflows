@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "distl-reporting": {
+      "type": "http",
+      "url": "${DISTL_MCP_SERVER_URL}"
+    }
+  }
+}

@@ -2,23 +2,30 @@
 
 ## Objective
 
-Generate a comprehensive monthly Google Ads performance report for a client. Automates data pulls via the Google Ads API and manages client briefs/reports through Google Drive. The specialist provides strategic context; everything else is handled by tools.
+Generate a comprehensive monthly Google Ads performance report for a client. Data is pulled automatically via MCP tools (Google Ads API + Google Drive). The specialist provides strategic context; everything else is handled by the system.
 
 ## Required Inputs
 
 - **Client name** — used to locate brief and reports on Google Drive
 - **Reporting month** — e.g. "2026-02" or "February 2026"
-- **Customer ID** — Google Ads account ID (optional if set in .env)
+- **Customer ID** — Google Ads account ID (ask specialist if unknown; use `google_ads_list_accounts` to look up)
 
-## Prerequisites
+## How It Works
 
-Before first run:
-1. Run `python tools/google_ads_auth_setup.py` to generate your Ads refresh token
-2. Run `python tools/google_drive_auth_setup.py` to authenticate with Drive
-3. Populate `.env` with all required variables (see `.env.example`)
-4. Create the "Google Ads Reporting" root folder in Google Drive and set its ID in `.env`
+This workflow uses MCP tools that connect to Google Ads and Google Drive through a secure server. All API credentials are held server-side — they never appear in the Claude Code session. The tools are:
 
-> **Test Mode:** If `TEST_MODE=true` in `.env`, all Google Ads data tools load sample data from `.tmp/sample_data/`. Generate sample data first: `python tools/generate_sample_data.py --client-name "Test Client" --month 2026-02`
+**Google Ads tools:**
+- `google_ads_list_accounts` — list accounts under the MCC
+- `google_ads_campaign_performance` — campaign metrics
+- `google_ads_search_terms` — search terms + coverage %
+- `google_ads_keyword_performance` — keyword metrics + quality scores
+- `google_ads_change_history` — what changed in the account
+
+**Google Drive tools:**
+- `drive_read_brief` — read client strategy brief
+- `drive_save_brief` — save/update brief
+- `drive_get_latest_report` — read most recent report
+- `drive_save_report` — save monthly report
 
 ---
 
@@ -27,22 +34,10 @@ Before first run:
 **Goal:** Retrieve the client's strategy brief and most recent report from Google Drive.
 
 **Steps:**
-1. Find the client's folder:
-   ```
-   python tools/gdrive_list_files.py --name-filter "{client_name}"
-   ```
-2. If found, download the brief:
-   ```
-   python tools/gdrive_read_file.py --file-name "brief.md" --folder-id {client_folder_id} --output-path .tmp/client_brief.md
-   ```
-3. Look for previous reports in the client's `reports/` subfolder:
-   ```
-   python tools/gdrive_list_files.py --folder-id {reports_folder_id}
-   ```
-4. If a previous report exists, download the most recent one:
-   ```
-   python tools/gdrive_read_file.py --file-id {latest_report_id} --output-path .tmp/previous_report.md
-   ```
+1. Read the client brief:
+   - Use the `drive_read_brief` tool with the client name
+2. Read the most recent previous report:
+   - Use the `drive_get_latest_report` tool with the client name
 
 **If no brief exists:** Proceed to Stage 2 to create one.
 **If no previous report:** Skip trend comparison context — establish baselines this month.
@@ -73,15 +68,9 @@ Present the brief to the specialist:
 - Geographic focus
 - Known no-go areas
 
-Save the brief locally to `.tmp/client_brief.md`, then upload:
-```
-python tools/gdrive_write_file.py --local-path .tmp/client_brief.md --drive-file-name "brief.md" --folder-id {client_folder_id}
-```
+Save the brief using `drive_save_brief` with the client name and full brief text.
 
-**If brief needs updating:** Edit `.tmp/client_brief.md`, then update:
-```
-python tools/gdrive_write_file.py --local-path .tmp/client_brief.md --file-id {existing_brief_id}
-```
+**If brief needs updating:** Edit the brief content and use `drive_save_brief` to update.
 
 ---
 
@@ -95,18 +84,16 @@ Calculate date ranges from the reporting month. Example for February 2026:
 - Current: 2026-02-01 to 2026-02-28
 - Comparison: 2026-01-01 to 2026-01-31
 
-Run these tools (can run in parallel):
-```
-python tools/fetch_campaign_performance.py --start-date {current_start} --end-date {current_end} --compare-from {prev_start} --compare-to {prev_end}
-python tools/fetch_search_terms.py --start-date {current_start} --end-date {current_end}
-python tools/fetch_search_terms.py --start-date {prev_start} --end-date {prev_end} --output-file .tmp/search_terms_prev.csv
-python tools/fetch_keyword_performance.py --start-date {current_start} --end-date {current_end}
-python tools/fetch_change_history.py --start-date {current_start} --end-date {current_end}
-```
+Use these MCP tools (can be called in sequence):
+1. `google_ads_change_history` — with customer_id, current start/end dates
+2. `google_ads_campaign_performance` — with customer_id, current start/end dates
+3. `google_ads_campaign_performance` — with customer_id, comparison start/end dates (for MoM comparison)
+4. `google_ads_search_terms` — with customer_id, current start/end dates
+5. `google_ads_keyword_performance` — with customer_id, current start/end dates
 
 ### Automated: Review change history
 
-Read `.tmp/change_history_summary_{dates}.md` and present to the specialist:
+Present the change history results to the specialist:
 > "I detected these changes in the account this month: {summary}. Is this complete, or was there anything else?"
 
 ### Manual: Ask specialist for context not available in the API
@@ -122,7 +109,7 @@ Skip questions where the brief or change history already provides the answer.
 
 ## Stage 4: Analyse
 
-**Goal:** Read all data from `.tmp/` and produce analysis tied to the client's goals.
+**Goal:** Analyse all pulled data and produce insights tied to the client's goals.
 
 ### Performance vs Goals
 - Budget pacing: on track, underspend, overspend?
@@ -132,7 +119,7 @@ Skip questions where the brief or change history already provides the answer.
 - If previous report available: continuation or new trend?
 
 ### Search Term Quality
-Read `.tmp/search_terms_{dates}.csv`:
+From the search terms data:
 - High-converting terms (winners to protect/expand)
 - Spending without converting (flag for review/negative)
 - Irrelevant queries or competitor brand leakage
@@ -205,34 +192,22 @@ Cross-reference change history with performance shifts:
 - Things to watch
 ```
 
-Save report to `.tmp/{client_name}_report_{month}.md`
-
 ---
 
 ## Stage 6: Store Report
 
 **Goal:** Save the report to Google Drive and present for review.
 
-1. Upload report:
-   ```
-   python tools/gdrive_write_file.py --local-path .tmp/{client_name}_report_{month}.md \
-       --drive-file-name "{Client Name} - Google Ads Report - {Month Year}.md" \
-       --folder-id {reports_folder_id}
-   ```
+1. Save the report using `drive_save_report` with client name, month, and report content
 2. Present the report text to the specialist for review
-3. If revisions needed: make changes locally, re-upload using `--file-id` to update
+3. If revisions needed: make changes and use `drive_save_report` again to update
 
 ---
 
 ## Stage 7: Update Brief (if needed)
 
 If this month's reporting revealed changed goals, new KPIs, or strategic shifts:
-
-1. Update `.tmp/client_brief.md` with new information
-2. Re-upload:
-   ```
-   python tools/gdrive_write_file.py --local-path .tmp/client_brief.md --file-id {brief_file_id}
-   ```
+- Update the brief content and use `drive_save_brief` to save
 
 ---
 
@@ -240,17 +215,17 @@ If this month's reporting revealed changed goals, new KPIs, or strategic shifts:
 
 | Error | Action |
 |-------|--------|
-| Auth expired | Re-run the relevant auth setup tool |
-| API rate limit | Wait and retry. Test accounts: ~15,000 ops/day. Explorer access: 2,880/day. Monthly reporting is well within limits. |
-| Empty data | Check if running against test account. Remind specialist about token access level. |
+| MCP tool returns error | Read the error message. Most will be auth or configuration issues on the server side — inform the specialist and ask them to check with the admin. |
+| Empty data | Check if running against a test account. Remind specialist about token access level. |
 | Change history empty | Change Event API only covers 30 days. Note limitation and ask specialist for manual context. |
-| Drive file not found | Confirm folder ID and file names. Offer to create new brief. |
+| No client folder on Drive | The tools will create it automatically when saving the first brief or report. |
 
 ## Edge Cases
 
 - **First-time client:** No previous report. Skip trend comparison. Focus on baselines.
 - **Mid-month report:** Adjust date ranges. Note partial data in report.
 - **Multiple accounts for one client:** Run workflow once per account. Brief notes multi-account structure.
+- **Unknown customer ID:** Use `google_ads_list_accounts` to look up accounts.
 
 ## Report Principles
 

@@ -1,9 +1,11 @@
 # Environment variables and secrets
 .env
+server/.env
 
-# Google OAuth credentials
+# Google OAuth credentials (server-side only)
 credentials.json
 token.json
+*.json.key
 
 # Temporary processing files
 .tmp/*
@@ -12,3 +14,4 @@ token.json
 # Python
 __pycache__/
 *.pyc
+*.egg-info/
