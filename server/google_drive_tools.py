@@ -11,9 +11,9 @@ Folder convention on Drive:
 import io
 import logging
 import os
-import tempfile
 
 from app import mcp
+from security import log_tool_call, sanitize_for_drive_query, validate_client_name
 
 logger = logging.getLogger(__name__)
 
@@ -58,8 +58,8 @@ def _get_drive_service():
         return build("drive", "v3", credentials=creds)
 
     raise RuntimeError(
-        "No Google Drive credentials configured. Set GOOGLE_SERVICE_ACCOUNT_KEY_PATH "
-        "or GOOGLE_DRIVE_REFRESH_TOKEN + GOOGLE_DRIVE_CLIENT_ID + GOOGLE_DRIVE_CLIENT_SECRET."
+        "No Google Drive credentials configured. "
+        "Set GOOGLE_SERVICE_ACCOUNT_KEY_PATH or GOOGLE_DRIVE_REFRESH_TOKEN + CLIENT_ID + CLIENT_SECRET."
     )
 
 
@@ -71,8 +71,9 @@ def _get_root_folder_id() -> str:
 
 
 def _find_folder(service, name: str, parent_id: str) -> dict | None:
+    safe_name = sanitize_for_drive_query(name)
     query = (
-        f"name = '{name}' and '{parent_id}' in parents "
+        f"name = '{safe_name}' and '{parent_id}' in parents "
         f"and mimeType = 'application/vnd.google-apps.folder' and trashed = false"
     )
     results = (
@@ -98,7 +99,8 @@ def _find_or_create_folder(service, name: str, parent_id: str) -> str:
 
 
 def _find_file(service, name: str, folder_id: str) -> dict | None:
-    query = f"name = '{name}' and '{folder_id}' in parents and trashed = false"
+    safe_name = sanitize_for_drive_query(name)
+    query = f"name = '{safe_name}' and '{folder_id}' in parents and trashed = false"
     results = (
         service.files()
         .list(
@@ -157,7 +159,8 @@ def _list_files_in_folder(
 ) -> list[dict]:
     query_parts = [f"'{folder_id}' in parents", "trashed = false"]
     if name_filter:
-        query_parts.append(f"name contains '{name_filter}'")
+        safe_filter = sanitize_for_drive_query(name_filter)
+        query_parts.append(f"name contains '{safe_filter}'")
     query = " and ".join(query_parts)
     all_files = []
     page_token = None
@@ -194,6 +197,13 @@ async def drive_read_brief(client_name: str) -> str:
         client_name: The client folder name on Google Drive (e.g. "Acme Corp")
     """
     try:
+        client_name = validate_client_name(client_name)
+    except ValueError as e:
+        return str(e)
+
+    log_tool_call("drive_read_brief", client_name=client_name)
+
+    try:
         service = _get_drive_service()
         root_id = _get_root_folder_id()
 
@@ -210,7 +220,7 @@ async def drive_read_brief(client_name: str) -> str:
 
     except Exception as e:
         logger.exception("drive_read_brief failed")
-        return f"Error reading brief: {e}"
+        return "Error reading brief. Check server logs for details."
 
 
 @mcp.tool()
@@ -224,6 +234,13 @@ async def drive_save_brief(client_name: str, content: str) -> str:
         client_name: The client folder name on Google Drive (e.g. "Acme Corp")
         content: The full brief text in markdown format
     """
+    try:
+        client_name = validate_client_name(client_name)
+    except ValueError as e:
+        return str(e)
+
+    log_tool_call("drive_save_brief", client_name=client_name, content=content)
+
     try:
         service = _get_drive_service()
         root_id = _get_root_folder_id()
@@ -239,7 +256,7 @@ async def drive_save_brief(client_name: str, content: str) -> str:
 
     except Exception as e:
         logger.exception("drive_save_brief failed")
-        return f"Error saving brief: {e}"
+        return "Error saving brief. Check server logs for details."
 
 
 @mcp.tool()
@@ -252,6 +269,13 @@ async def drive_get_latest_report(client_name: str) -> str:
     Args:
         client_name: The client folder name on Google Drive (e.g. "Acme Corp")
     """
+    try:
+        client_name = validate_client_name(client_name)
+    except ValueError as e:
+        return str(e)
+
+    log_tool_call("drive_get_latest_report", client_name=client_name)
+
     try:
         service = _get_drive_service()
         root_id = _get_root_folder_id()
@@ -274,7 +298,7 @@ async def drive_get_latest_report(client_name: str) -> str:
 
     except Exception as e:
         logger.exception("drive_get_latest_report failed")
-        return f"Error reading latest report: {e}"
+        return "Error reading latest report. Check server logs for details."
 
 
 @mcp.tool()
@@ -291,6 +315,16 @@ async def drive_save_report(
         month: The reporting month (e.g. "2026-02" or "February 2026")
         content: The full report text in markdown format
     """
+    try:
+        client_name = validate_client_name(client_name)
+    except ValueError as e:
+        return str(e)
+
+    if not month or not month.strip():
+        return "Month cannot be empty."
+
+    log_tool_call("drive_save_report", client_name=client_name, month=month, content=content)
+
     try:
         service = _get_drive_service()
         root_id = _get_root_folder_id()
@@ -313,4 +347,4 @@ async def drive_save_report(
 
     except Exception as e:
         logger.exception("drive_save_report failed")
-        return f"Error saving report: {e}"
+        return "Error saving report. Check server logs for details."

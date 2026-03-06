@@ -2,7 +2,10 @@
   "mcpServers": {
     "distl-reporting": {
       "type": "http",
-      "url": "${DISTL_MCP_SERVER_URL}"
+      "url": "${DISTL_MCP_SERVER_URL}",
+      "headers": {
+        "Authorization": "Bearer ${DISTL_MCP_API_KEY}"
+      }
     }
   }
 }

@@ -10,6 +10,7 @@ import os
 from datetime import date, datetime, timedelta
 
 from app import mcp
+from security import log_tool_call, validate_customer_id, validate_date
 
 logger = logging.getLogger(__name__)
 
@@ -159,10 +160,6 @@ def _run_gaql(client, customer_id: str, query: str) -> list:
     return rows
 
 
-def _clean_customer_id(cid: str) -> str:
-    return cid.replace("-", "")
-
-
 def _fmt_currency(micros: int | float) -> str:
     return f"${micros / 1_000_000:,.2f}"
 
@@ -187,9 +184,10 @@ async def google_ads_list_accounts() -> str:
     Returns account IDs, names, and whether each is a manager account.
     No inputs required — uses server-side MCC credentials.
     """
+    log_tool_call("google_ads_list_accounts")
     try:
         client = _get_google_ads_client()
-        login_id = _clean_customer_id(os.getenv("GOOGLE_ADS_LOGIN_CUSTOMER_ID", ""))
+        login_id = os.getenv("GOOGLE_ADS_LOGIN_CUSTOMER_ID", "").replace("-", "")
         rows = _run_gaql(client, login_id, ACCESSIBLE_CUSTOMERS_QUERY)
 
         if not rows:
@@ -209,7 +207,7 @@ async def google_ads_list_accounts() -> str:
 
     except Exception as e:
         logger.exception("google_ads_list_accounts failed")
-        return f"Error listing accounts: {e}"
+        return "Error listing accounts. Check server logs for details."
 
 
 @mcp.tool()
@@ -230,8 +228,16 @@ async def google_ads_campaign_performance(
         end_date: End of reporting period (YYYY-MM-DD)
     """
     try:
+        cid = validate_customer_id(customer_id)
+        start_date = validate_date(start_date, "start_date")
+        end_date = validate_date(end_date, "end_date")
+    except ValueError as e:
+        return str(e)
+
+    log_tool_call("google_ads_campaign_performance", customer_id=cid, start_date=start_date, end_date=end_date)
+
+    try:
         client = _get_google_ads_client()
-        cid = _clean_customer_id(customer_id)
         query = CAMPAIGN_PERFORMANCE_QUERY.format(
             start_date=start_date, end_date=end_date
         )
@@ -311,7 +317,7 @@ async def google_ads_campaign_performance(
 
     except Exception as e:
         logger.exception("google_ads_campaign_performance failed")
-        return f"Error pulling campaign performance: {e}"
+        return "Error pulling campaign performance. Check server logs for details."
 
 
 @mcp.tool()
@@ -332,8 +338,16 @@ async def google_ads_search_terms(
         end_date: End of reporting period (YYYY-MM-DD)
     """
     try:
+        cid = validate_customer_id(customer_id)
+        start_date = validate_date(start_date, "start_date")
+        end_date = validate_date(end_date, "end_date")
+    except ValueError as e:
+        return str(e)
+
+    log_tool_call("google_ads_search_terms", customer_id=cid, start_date=start_date, end_date=end_date)
+
+    try:
         client = _get_google_ads_client()
-        cid = _clean_customer_id(customer_id)
 
         # Pull search terms
         query = SEARCH_TERMS_QUERY.format(
@@ -419,7 +433,7 @@ async def google_ads_search_terms(
 
     except Exception as e:
         logger.exception("google_ads_search_terms failed")
-        return f"Error pulling search terms: {e}"
+        return "Error pulling search terms. Check server logs for details."
 
 
 @mcp.tool()
@@ -439,8 +453,16 @@ async def google_ads_keyword_performance(
         end_date: End of reporting period (YYYY-MM-DD)
     """
     try:
+        cid = validate_customer_id(customer_id)
+        start_date = validate_date(start_date, "start_date")
+        end_date = validate_date(end_date, "end_date")
+    except ValueError as e:
+        return str(e)
+
+    log_tool_call("google_ads_keyword_performance", customer_id=cid, start_date=start_date, end_date=end_date)
+
+    try:
         client = _get_google_ads_client()
-        cid = _clean_customer_id(customer_id)
         query = KEYWORD_PERFORMANCE_QUERY.format(
             start_date=start_date, end_date=end_date
         )
@@ -513,7 +535,7 @@ async def google_ads_keyword_performance(
 
     except Exception as e:
         logger.exception("google_ads_keyword_performance failed")
-        return f"Error pulling keyword performance: {e}"
+        return "Error pulling keyword performance. Check server logs for details."
 
 
 @mcp.tool()
@@ -536,8 +558,16 @@ async def google_ads_change_history(
         end_date: End of reporting period (YYYY-MM-DD)
     """
     try:
+        cid = validate_customer_id(customer_id)
+        start_date = validate_date(start_date, "start_date")
+        end_date = validate_date(end_date, "end_date")
+    except ValueError as e:
+        return str(e)
+
+    log_tool_call("google_ads_change_history", customer_id=cid, start_date=start_date, end_date=end_date)
+
+    try:
         client = _get_google_ads_client()
-        cid = _clean_customer_id(customer_id)
 
         # Check 30-day limit
         start = datetime.strptime(start_date, "%Y-%m-%d").date()
@@ -644,4 +674,4 @@ async def google_ads_change_history(
 
     except Exception as e:
         logger.exception("google_ads_change_history failed")
-        return f"Error pulling change history: {e}"
+        return "Error pulling change history. Check server logs for details."
