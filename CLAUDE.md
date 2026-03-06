@@ -27,6 +27,14 @@ When you hit an error:
 - Example: You get rate-limited on an API, so you dig into the docs, discover a batch endpoint, refactor the tool to use it, verify it works, then update the workflow so this never happens again
 **3. Keep workflows current**
 Workflows should evolve as you learn. When you find better methods, discover constraints, or encounter recurring issues, update the workflow. That said, don't create or overwrite workflows without asking unless I explicitly tell you to. These are your instructions and need to be preserved and refined, not tossed after one use.
+## Validate Before You Build
+Before using any tool output as input for the next step:
+1. **Check for failure signals** — empty arrays, error fields, missing files, placeholder data, `downloaded_assets: []`
+2. **Sanity-check the data** — do the colors look right for this brand? Does the content match what you'd expect? Are there real images or just placeholders?
+3. **If something looks wrong, STOP and flag it** — don't proceed with questionable data. Tell the user what's wrong and what options exist to fix it.
+
+The worst outcome is confidently delivering wrong work. A tool that runs without errors but produces fake data is a silent failure — treat it as a bug. Never build on top of data you haven't verified.
+
 ## The Self-Improvement Loop
 Every failure is a chance to make the system stronger:
 1. Identify what broke
