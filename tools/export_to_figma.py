@@ -225,7 +225,7 @@ def start_local_server(directory: str, port: int) -> socketserver.TCPServer:
         def log_message(self, format, *args):
             pass
 
-    server = socketserver.TCPServer(("", port), QuietHandler)
+    server = socketserver.TCPServer(("127.0.0.1", port), QuietHandler)
     thread = threading.Thread(target=server.serve_forever, daemon=True)
     thread.start()
     return server

@@ -7,6 +7,10 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
 
+# Run as non-root user
+RUN useradd --create-home appuser
+USER appuser
+
 # Cloud Run sets the PORT environment variable
 ENV PORT=8000
 

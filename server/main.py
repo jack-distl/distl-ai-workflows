@@ -84,6 +84,12 @@ class APIKeyAuthMiddleware:
                 logger.warning("Rejected unauthorized request to %s", path)
                 return
 
+        # Reject WebSocket connections — this server uses HTTP/SSE only
+        if scope["type"] == "websocket":
+            await send({"type": "websocket.close", "code": 1008})
+            logger.warning("Rejected WebSocket connection attempt")
+            return
+
         await self.app(scope, receive, send)
 
 

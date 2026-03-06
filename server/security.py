@@ -36,6 +36,10 @@ def verify_api_key(provided: str) -> bool:
     if not expected:
         # No key configured — reject all requests in production, allow in dev
         if os.getenv("MCP_AUTH_DISABLED", "").lower() == "true":
+            if os.getenv("ENVIRONMENT", "").lower() == "production":
+                logger.error("MCP_AUTH_DISABLED is set but ENVIRONMENT=production. Rejecting request.")
+                return False
+            logger.warning("MCP_AUTH_DISABLED is true — authentication bypassed (dev mode).")
             return True
         logger.error("MCP_API_KEY not set and MCP_AUTH_DISABLED is not true. Rejecting request.")
         return False
