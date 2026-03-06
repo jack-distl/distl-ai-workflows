@@ -8,10 +8,14 @@ token.json
 *.json.key
 
 # Temporary processing files
-.tmp/*
-!.tmp/.gitkeep
+.tmp/
 
 # Python
 __pycache__/
 *.pyc
+*.pyo
 *.egg-info/
+
+# OS
+.DS_Store
+Thumbs.db
