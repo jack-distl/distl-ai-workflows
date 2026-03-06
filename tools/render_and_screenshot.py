@@ -44,7 +44,7 @@ def start_local_server(directory: str, port: int) -> tuple[socketserver.TCPServe
         def log_message(self, format, *args):
             pass  # Suppress request logs
 
-    server = socketserver.TCPServer(("", port), QuietHandler)
+    server = socketserver.TCPServer(("127.0.0.1", port), QuietHandler)
     thread = threading.Thread(target=server.serve_forever, daemon=True)
     thread.start()
     return server, thread
