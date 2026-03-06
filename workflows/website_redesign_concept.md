@@ -6,6 +6,16 @@ Generate a bold, modern website redesign concept for a client proposal. Scrape t
 
 **Cost per run: $0** — all AI work is done by the agent within the Claude Code session.
 
+> **⚠️ Known Issue: Cloud Sandbox Network Access (as of March 2026)**
+>
+> This workflow requires outbound HTTP to scrape websites, render pages, and export to Figma. In Claude Code **cloud sessions**, outbound HTTP is blocked by an egress proxy bug — custom domains added via settings are not included in the proxy's allowlist JWT.
+>
+> **Tracked in:** [#11897](https://github.com/anthropics/claude-code/issues/11897), [#19087](https://github.com/anthropics/claude-code/issues/19087), [#30112](https://github.com/anthropics/claude-code/issues/30112)
+>
+> **To check if fixed:** Start a new session and run `curl https://example.com`. If you get a response (not 403), the workflow will work. Also verify your settings at `claude.ai/settings/capabilities` → "Allow network egress" → "All domains".
+>
+> **Until fixed:** This workflow only works when running Claude Code **locally** (not in the cloud sandbox).
+
 ## Prerequisites
 
 - Python 3.10+
