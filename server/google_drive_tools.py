@@ -348,3 +348,81 @@ async def drive_save_report(
     except Exception as e:
         logger.exception("drive_save_report failed")
         return "Error saving report. Check server logs for details."
+
+
+@mcp.tool()
+async def drive_upload_file(
+    folder_name: str, file_name: str, file_base64: str, mime_type: str
+) -> str:
+    """Upload a binary file to Google Drive.
+
+    Creates the target folder under the root if it doesn't exist.
+    If a file with the same name already exists in the folder, it is updated.
+
+    Args:
+        folder_name: The folder name on Google Drive (e.g. "Prospect Research")
+        file_name: The name for the uploaded file (e.g. "prospects_2026-03-08.xlsx")
+        file_base64: The file content encoded as a base64 string
+        mime_type: The MIME type (e.g. "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+    """
+    import base64
+
+    if not folder_name or not folder_name.strip():
+        return "Folder name cannot be empty."
+    if not file_name or not file_name.strip():
+        return "File name cannot be empty."
+    if not file_base64:
+        return "File content cannot be empty."
+
+    try:
+        file_bytes = base64.b64decode(file_base64)
+    except Exception:
+        return "Invalid base64 encoding for file content."
+
+    max_size = 50 * 1024 * 1024  # 50MB
+    if len(file_bytes) > max_size:
+        return f"File too large ({len(file_bytes)} bytes). Maximum is {max_size} bytes."
+
+    log_tool_call(
+        "drive_upload_file",
+        folder_name=folder_name,
+        file_name=file_name,
+        mime_type=mime_type,
+        file_size=len(file_bytes),
+    )
+
+    try:
+        from googleapiclient.http import MediaInMemoryUpload
+
+        service = _get_drive_service()
+        root_id = _get_root_folder_id()
+
+        folder_id = _find_or_create_folder(service, folder_name.strip(), root_id)
+
+        existing = _find_file(service, file_name.strip(), folder_id)
+        file_id = existing["id"] if existing else None
+
+        media = MediaInMemoryUpload(file_bytes, mimetype=mime_type, resumable=False)
+
+        if file_id:
+            result = (
+                service.files()
+                .update(fileId=file_id, media_body=media, fields="id, name")
+                .execute()
+            )
+            action = "Updated"
+        else:
+            metadata = {"name": file_name.strip(), "parents": [folder_id]}
+            result = (
+                service.files()
+                .create(body=metadata, media_body=media, fields="id, name")
+                .execute()
+            )
+            action = "Created"
+
+        url = f"https://drive.google.com/file/d/{result['id']}/view"
+        return f"{action} file: {file_name}\nFile: {url}"
+
+    except Exception as e:
+        logger.exception("drive_upload_file failed")
+        return "Error uploading file. Check server logs for details."
