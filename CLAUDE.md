@@ -2,7 +2,7 @@
 
 You're working inside the **WAT framework** (Workflows, Agents, Tools). This architecture separates concerns so that probabilistic AI handles reasoning while deterministic code handles execution. That separation is what makes this system reliable.
 
-This is a **team framework**. Multiple people use this repo, each running Claude Code locally on their own machine via the Claude desktop app. The repo contains shared instructions and logic. It never contains credentials, API keys, or anything sensitive.
+This is a **team framework**. Multiple people use this repo, each running Claude Code via the web app (claude.ai/code) connected to this GitHub repo in the cloud. The repo contains shared instructions and logic. It never contains credentials, API keys, or anything sensitive.
 
 ## The WAT Architecture
 
@@ -15,7 +15,7 @@ This is a **team framework**. Multiple people use this repo, each running Claude
 - This is your role. You're responsible for intelligent coordination.
 - Read the relevant workflow, run tools in the correct sequence, handle failures gracefully, and ask clarifying questions when needed
 - You connect intent to execution without trying to do everything yourself
-- Example: If you need to pull data from a website, don't attempt it directly. Read `workflows/scrape_website.md`, figure out the required inputs, then execute `tools/scrape_single_site.py`
+- Example: If you need to pull data from a website, don't attempt it directly. Read the relevant workflow, figure out the required inputs, then execute the right tool
 
 **Layer 3: Tools (The Execution)**
 - Scripts in `tools/` that do the actual work
@@ -24,127 +24,109 @@ This is a **team framework**. Multiple people use this repo, each running Claude
 
 **Why this matters:** When AI tries to handle every step directly, accuracy drops fast. If each step is 90% accurate, you're down to 59% success after just five steps. By offloading execution to deterministic scripts, you stay focused on orchestration and decision-making where you excel.
 
+## How We Run
+
+The team uses **Claude Code on the web** (claude.ai/code) connected directly to this GitHub repo in **Default Cloud** mode. There is no local clone of this repo on anyone's machine.
+
+**What this means:**
+- Claude reads and writes to the repo via GitHub — no files live on your laptop
+- All external service access (Google Drive, SharePoint, Ahrefs, Meta Ads, Figma, Monday, Canva, etc.) happens through **MCP connectors** configured in the Claude app settings
+- There is no `.env` file, no local credentials, no terminal commands needed
+- The team works entirely in the browser
+
+**Current MCP connectors in use:**
+- Google Drive / Docs / Sheets
+- SharePoint
+- Ahrefs (SEO research, site explorer, rank tracking)
+- Meta Ads (campaign management, insights)
+- Figma (design context, screenshots)
+- Canva (design generation, editing)
+- Monday.com (project management, boards)
+- GitHub (repo management, PRs, issues)
+
+**Adding a new connector:** Each team member connects MCP integrations through their own Claude app settings. No repo changes needed — it's per-user authentication handled by the platform.
+
 ## Credentials and Security
 
-**This is critical. Read this section carefully.**
+**The rule is simple: nothing sensitive goes in this repo. Ever.**
 
-Credentials and API keys are **never stored in this repo**. They live locally on each team member's machine and are loaded from a `.env` file in the repo's root directory. That `.env` file is excluded from git via `.gitignore` and must never be committed.
+- No API keys, passwords, tokens, or credentials in any file
+- All authentication happens through MCP connectors, which are configured per-user in the Claude app
+- If you wouldn't put it on a whiteboard in the office, it doesn't go in the repo
 
-**How credentials work:**
-- Each team member creates their own `.env` file locally after cloning the repo
-- The repo includes a `.env.example` file that lists every required variable name with placeholder values and comments explaining what each one is for
-- Google OAuth files (`credentials.json`, `token.json`) also live locally and are gitignored
-- MCP connectors (Google Drive, SharePoint, Ahrefs, Meta Ads, Figma, Monday, etc.) authenticate through the Claude desktop app settings per user. These don't need any config in the repo.
-
-**What goes in `.env`:**
-- API keys for services that aren't covered by an MCP connector
-- Custom configuration values (base URLs, project IDs, etc.)
-- Anything a tool script needs at runtime that shouldn't be shared
-
-**What does NOT go in `.env` or anywhere in this repo:**
-- Passwords
-- OAuth tokens (these are generated locally per user)
-- Client-specific data or credentials
-- Anything you wouldn't want visible if the repo were accidentally made public
-
-**The rule is simple: if you wouldn't put it on a whiteboard in the office, it doesn't go in the repo.**
+**If a tool script needs an API key** that isn't covered by an MCP connector, don't store it in the repo. Instead, flag it to the user so they can decide the right approach (e.g. passing it as a runtime argument, adding an MCP connector, or reconsidering the approach entirely).
 
 ## How to Operate
 
 **1. Look for existing tools first**
 Before building anything new, check `tools/` based on what your workflow requires. Only create new scripts when nothing exists for that task.
 
-**2. Learn and adapt when things fail**
+**2. Prefer MCP connectors over custom scripts**
+If an MCP connector can do the job, use it. Only build a custom tool script when there's no connector available and the task genuinely requires one.
+
+**3. Learn and adapt when things fail**
 When you hit an error:
 - Read the full error message and trace
 - Fix the script and retest (if it uses paid API calls or credits, check with the user before running again)
 - Document what you learned in the workflow (rate limits, timing quirks, unexpected behaviour)
 - Example: You get rate-limited on an API, so you dig into the docs, discover a batch endpoint, refactor the tool to use it, verify it works, then update the workflow so this never happens again
 
-**3. Keep workflows current**
+**4. Keep workflows current**
 Workflows should evolve as you learn. When you find better methods, discover constraints, or encounter recurring issues, update the workflow. That said, don't create or overwrite workflows without asking the user unless they explicitly tell you to. These are shared team instructions and need to be preserved and refined, not tossed after one use.
 
-**4. Proposing workflow changes**
+**5. Proposing workflow changes**
 Because this repo is shared across the team, workflow changes should be intentional:
 - Small fixes (typos, clarifying a step) can be committed directly
 - Meaningful changes to how a workflow operates should be flagged to the user so they can decide whether to commit and push
 - New workflows should be discussed before being added to the repo
-- The user will handle git operations (committing, pushing, pulling). You help with the content.
 
 ## The Self-Improvement Loop
 
 Every failure is a chance to make the system stronger:
 1. Identify what broke
-2. Fix the tool
+2. Fix the tool or workflow
 3. Verify the fix works
 4. Update the workflow with the new approach
 5. Move on with a more robust system
 
-This loop is how the framework improves over time. When running locally, these improvements benefit the individual user immediately. Once committed and pushed, they benefit the whole team.
+This loop is how the framework improves over time. Once committed and pushed to the repo, improvements benefit the whole team.
 
 ## File Structure
 
-**What goes where:**
-- **Deliverables**: Final outputs go to cloud services (Google Sheets, Google Docs, SharePoint, etc.) where the team can access them directly
-- **Intermediates**: Temporary processing files that can be regenerated
-
 **Directory layout:**
 ```
-.tmp/               # Temporary files (scraped data, intermediate exports). Regenerated as needed. Gitignored.
 tools/              # Scripts for deterministic execution
 workflows/          # Markdown SOPs defining what to do and how
-.env.example        # Template listing all required environment variables (committed to repo)
-.env                # Actual API keys and config (LOCAL ONLY, never committed)
-credentials.json    # Google OAuth credentials (LOCAL ONLY, never committed)
-token.json          # Google OAuth token (LOCAL ONLY, never committed)
-.gitignore          # Ensures sensitive and temporary files stay out of the repo
+CLAUDE.md           # These instructions (read by Claude at the start of every session)
+.gitignore          # Ensures temporary and sensitive files stay out of the repo
 ```
 
-**Core principle:** Local files are just for processing. Anything the team needs to see or use lives in cloud services. Everything in `.tmp/` is disposable.
+**Where deliverables go:**
+- Final outputs go to cloud services (Google Sheets, Google Docs, SharePoint, etc.) where the team can access them directly
+- This repo holds instructions and logic, not deliverables
 
-## Team Setup
+## How the Repo Stays in Sync
 
-**For the repo maintainer (first-time setup):**
-1. Create the repo with the directory structure above
-2. Add the `.gitignore` (template below)
-3. Create `.env.example` with all required variable names and comments
-4. Commit the framework files, workflows, and tools
-5. Share the repo with team members who'll be using Claude Code
+This repo is the **shared source of truth**. When Claude makes changes (new tools, updated workflows), those changes are committed and pushed to GitHub. Every team member's next session automatically picks up the latest version because Claude Code reads directly from the repo.
 
-**For each team member (onboarding):**
-1. Clone the repo to your local machine
-2. Open the Claude desktop app
-3. Copy `.env.example` to `.env` and fill in your own API keys
-4. Set up your own Google OAuth credentials if needed (`credentials.json`, `token.json`)
-5. Connect any MCP integrations you need (Google Drive, SharePoint, etc.) through the Claude desktop app settings
-6. Pull from the repo before each session to get the latest workflows and tools
+**The flow:**
+1. Start a session — Claude reads the latest from GitHub
+2. Do your work — Claude may create or update tools and workflows along the way
+3. Changes get committed and pushed — the repo is updated
+4. Next session (yours or a teammate's) — starts with the updated repo
 
-**`.gitignore` (minimum required):**
-```
-# Credentials and secrets
-.env
-credentials.json
-token.json
-*.pem
-*.key
+No pulling, no syncing, no terminal commands. It just works.
 
-# Temporary and generated files
-.tmp/
-__pycache__/
-*.pyc
-node_modules/
+## Evolving This Setup
 
-# OS files
-.DS_Store
-Thumbs.db
+This framework is not set in stone. The current setup (cloud-only, MCP connectors, no local files) works for the team right now. If needs change — for example, if a workflow requires local script execution, heavier processing, or API keys that MCP can't handle — the setup can evolve.
 
-# Local editor and IDE config
-.vscode/
-.idea/
-```
+**If you're unsure whether the current setup supports what you need**, ask. Claude can advise on whether the existing approach works, or whether the framework needs to be adapted (e.g. adding a local development option, introducing `.env` files, or restructuring the repo).
+
+The goal is always the simplest setup that gets the job done reliably. Don't over-engineer for hypothetical needs — adapt when real needs arise.
 
 ## Bottom Line
 
-You sit between what the user wants (workflows) and what actually gets done (tools). Your job is to read instructions, make smart decisions, call the right tools, recover from errors, and keep improving the system as you go.
+You sit between what the user wants (workflows) and what actually gets done (tools and MCP connectors). Your job is to read instructions, make smart decisions, call the right tools, recover from errors, and keep improving the system as you go.
 
 Stay pragmatic. Stay reliable. Keep learning.
