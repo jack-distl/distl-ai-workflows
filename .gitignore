@@ -1,32 +1,20 @@
-# Environment variables and secrets
+# Credentials and secrets
 .env
-.env.*
-server/.env
-server/.env.*
-
-# Google OAuth credentials (server-side only)
 credentials.json
 token.json
-*.json.key
-
-# Private keys and certificates
 *.pem
 *.key
-*.p12
 
-# Virtual environments
-venv/
-.venv/
-
-# Temporary processing files
+# Temporary and generated files
 .tmp/
-
-# Python
 __pycache__/
 *.pyc
-*.pyo
-*.egg-info/
+node_modules/
 
-# OS
+# OS files
 .DS_Store
 Thumbs.db
+
+# Local editor and IDE config
+.vscode/
+.idea/
