@@ -8,6 +8,31 @@ Systematically scan, collect, and synthesise expert opinions, industry trends, a
 2. **Takes Bank** — A living repository of opinionated angles the team can draw from for content
 3. **Blog Fuel** — Authoritative references and expert-backed positions that make blog posts credible and differentiated
 
+## Client Relevance Lens
+
+Everything in the Hivemind should be filtered through: **"Would this matter to our ideal client?"**
+
+### Who we're talking to
+- **Australian businesses** — content and takes should resonate with the AU market, reference AU-relevant examples where possible, and account for the AU competitive landscape
+- **Annual agency spend: $50k–$250k+** — these are businesses that invest seriously in marketing, expect strategic thinking, and want an agency that knows its stuff. They're not shopping on price
+- **Growth-oriented, ambitious** — they want to scale, launch into new markets, dominate their category. They're comfortable spending to get results
+- **Typically SMBs through to mid-market** — owner-led or with a small marketing team. Not massive enterprises with 100+ employee marketing departments and layers of procurement. Think businesses where the founder, GM, or marketing manager is the decision-maker
+
+### What this means for the Hivemind
+- **Skip signals that only apply to enterprise** — global brand governance frameworks, Fortune 500 case studies, massive multi-market campaigns. Unless there's a transferable insight for smaller businesses, it's noise
+- **Skip budget-conscious / bootstrap content** — "how to do marketing with no budget" or "free tools for startups" isn't our world. Our clients invest in quality
+- **Prioritise practical, results-driven takes** — our clients care about what works, what's changing, and what they should do about it. Theory is fine if it leads somewhere actionable
+- **AU-specific signals are gold** — Australian market data, AU platform rollouts, AU consumer behaviour shifts, and AU industry events should be flagged prominently
+- **Think owner/operator language** — the content we produce from this should speak to business leaders who are smart but not marketing professionals. Avoid jargon-heavy, agency-to-agency navel-gazing unless it genuinely informs a client-facing take
+
+### Relevance check for every signal
+Before adding a signal or take, ask:
+1. Would our ideal client care about this?
+2. Can we turn this into advice or a perspective that's relevant to their business?
+3. Does this help position Distl as the agency that *gets* businesses like theirs?
+
+If the answer to all three is no, skip it.
+
 ## Core Verticals to Monitor
 
 | Vertical | What to track |
@@ -74,7 +99,10 @@ For each vertical, use web search to find recent expert opinions and industry ne
 - `[vertical topic] site:linkedin.com/posts` — LinkedIn expert posts
 - `[vertical topic] 2026` on authoritative sites — Recent articles
 - `[expert name] [vertical topic]` — Specific expert takes
+- `[vertical topic] Australia` — AU-specific signals (prioritise these)
 - Use Ahrefs (via MCP) to check what's ranking and trending in each vertical
+
+**Remember the Client Relevance Lens** — filter out enterprise-only content, budget-conscious advice, and anything that wouldn't resonate with an ambitious AU business investing seriously in marketing.
 
 **What to capture for each signal:**
 - **Source**: Who said it and where
@@ -83,6 +111,7 @@ For each vertical, use web search to find recent expert opinions and industry ne
 - **Signal**: The core claim, opinion, or data point (1–3 sentences)
 - **Link**: URL to the original source
 - **Credibility**: Tier 1/2/3 rating
+- **Client relevance**: How does this affect AU businesses spending $50k–$250k+ on marketing? (If it doesn't, skip it — see Client Relevance Lens)
 - **Our angle**: Initial reaction — do we agree, disagree, or want to expand on this?
 
 ### Step 2: Synthesise into Takes
@@ -108,7 +137,7 @@ Output goes to a shared Google Sheet (the "Hivemind") with these tabs:
 
 #### Tab 1: Signal Feed
 All raw signals captured during scans. Columns:
-`Date | Vertical | Source | Expert/Pub | Signal Summary | Link | Tier | Our Angle`
+`Date | Vertical | Source | Expert/Pub | Signal Summary | Link | Tier | Client Relevance | Our Angle`
 
 #### Tab 2: Takes Bank
 Synthesised takes ready for content use. Columns:

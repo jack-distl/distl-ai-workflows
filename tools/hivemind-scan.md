@@ -77,12 +77,20 @@ For each vertical, use Ahrefs to:
 - Note any ranking shifts for key industry terms
 
 #### 3. Signal Extraction
-For each relevant result found:
+For each relevant result found, apply the **Client Relevance Lens** before capturing:
+- Would an ambitious AU business spending $50k–$250k+ on marketing care about this?
+- Is this actionable for SMBs and mid-market businesses (not enterprise-only)?
+- Can Distl turn this into a useful perspective for clients?
+
+If yes, capture:
 - Extract the core claim/opinion/data point
 - Identify the source and author
 - Assign a vertical
 - Rate credibility (Tier 1/2/3)
+- Note client relevance (how this affects AU businesses in our ICP)
 - Draft an initial "Our Angle" reaction
+
+**Skip:** Enterprise-only insights, budget/bootstrap advice, overly academic theory, US/UK-only regulatory changes with no AU impact.
 
 #### 4. Take Synthesis
 Group signals by theme and generate takes:
