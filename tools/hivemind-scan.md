@@ -19,47 +19,55 @@ For each vertical in scope, run searches:
 ```
 Search queries per vertical:
 
-SEO & Organic:
+SEO:
 - "SEO trends 2026"
 - "Google algorithm update" (last [timeframe] days)
 - "SEO expert opinion site:linkedin.com/posts"
 - "technical SEO" latest news
-- Check: searchengineland.com, searchenginejournal.com, moz.com/blog
+- "AI overviews SEO impact"
+- Check: searchengineland.com, searchenginejournal.com, moz.com/blog, ahrefs.com/blog
 
-Paid Media:
+Google Ads:
+- "Google Ads update 2026"
+- "Performance Max" latest
+- "Google Ads strategy site:linkedin.com/posts"
+- "PPC bidding strategy" expert opinion
+- Check: ads.google.com/home/resources, ppc hero, wordstream.com/blog, optmyzr.com/blog
+
+Organic Social Media:
+- "social media algorithm 2026"
+- "organic social strategy" latest
+- "social media trends site:linkedin.com/posts"
+- "organic reach" expert opinion
+- Check: socialmediaexaminer.com, hootsuite.com/research, sproutsocial.com/insights
+
+Paid Social Media:
 - "Meta ads update 2026"
-- "PPC strategy" latest
+- "TikTok ads" latest
 - "paid social expert opinion site:linkedin.com/posts"
-- Check: adexchanger.com, socialmediaexaminer.com
+- "social ads ROAS" strategy
+- Check: adexchanger.com, jonloomer.com, meta business blog
 
-Content & Copy:
-- "content marketing trends 2026"
-- "AI content writing" expert opinion
-- "content strategy" latest
-- Check: contentmarketinginstitute.com, copyblogger.com
-
-Design & Creative:
-- "UX design trends 2026"
-- "web design" expert opinion
-- Check: smashingmagazine.com, nngroup.com
-
-Web & CRO:
-- "conversion rate optimisation 2026"
+Website Development:
+- "web development trends 2026"
 - "Core Web Vitals update"
 - "CRO expert" latest
-- Check: cxl.com, web.dev/blog
+- "headless CMS" opinion
+- Check: smashingmagazine.com, web.dev/blog, cxl.com, nngroup.com
 
-Strategy & Analytics:
-- "marketing strategy 2026"
-- "GA4" latest changes
-- "marketing measurement" expert
-- Check: marketingweek.com, digiday.com
+Branding:
+- "brand strategy 2026"
+- "rebrand case study" latest
+- "brand vs performance marketing"
+- "brand positioning" expert opinion
+- Check: marketingweek.com, digiday.com, thedrum.com, underconsideration.com/brandnew
 
 AI in Marketing:
 - "AI marketing tools 2026"
-- "AI content" industry opinion
+- "AI content generation" expert opinion
 - "marketing automation AI"
-- Check: Paul Roetzer, Christopher Penn latest
+- "LLM marketing workflow"
+- Check: marketingaiinstitute.com, Paul Roetzer latest, Christopher Penn latest
 ```
 
 #### 2. Ahrefs Check (via MCP)

@@ -12,13 +12,13 @@ Systematically scan, collect, and synthesise expert opinions, industry trends, a
 
 | Vertical | What to track |
 |---|---|
-| SEO & Organic Search | Algorithm updates, ranking factor debates, technical SEO shifts, content strategy evolution |
-| Paid Media & Social Ads | Platform changes (Meta, Google, TikTok), bidding strategies, creative performance trends, attribution debates |
-| Content & Copywriting | AI content discourse, storytelling approaches, content frameworks, thought leadership trends |
-| Design & Creative | Design system trends, UX patterns, conversion-focused design, brand identity shifts |
-| Web Development & CRO | Core Web Vitals, conversion optimisation tactics, tech stack debates, accessibility |
-| Strategy & Analytics | Measurement frameworks, GA4/attribution, marketing mix, budget allocation discourse |
-| AI in Marketing | AI tool adoption, workflow automation, ethical considerations, competitive implications |
+| SEO | Algorithm updates, ranking factor debates, technical SEO shifts, local SEO, content strategy for organic, link building discourse, AI overviews & search generative experience |
+| Google Ads | Search & Shopping campaign strategies, Performance Max debates, bidding strategies, Quality Score factors, attribution, auction insights, Google Ads platform changes |
+| Organic Social Media | Platform algorithm changes, content formats & trends, community building, social SEO, engagement tactics, organic reach debates, creator economy shifts |
+| Paid Social Media | Meta/TikTok/LinkedIn ad platform changes, creative performance trends, audience targeting shifts, attribution & measurement, ad format innovation, ROAS debates |
+| Website Development | Core Web Vitals, CMS & tech stack debates, accessibility, page speed, CRO tactics, UX patterns, headless/composable architecture, AI in web dev |
+| Branding | Brand strategy frameworks, visual identity trends, brand voice & tone, positioning debates, rebrand case studies, brand measurement, brand vs performance marketing discourse |
+| AI in Marketing | AI tool adoption & reviews, LLM/agent workflows, AI content generation debates, marketing automation, ethical considerations, competitive implications, AI search & discovery |
 
 ## Source Tiers
 
@@ -35,34 +35,34 @@ These are named individuals with demonstrated expertise. Track their posts, arti
 
 | Vertical | Experts to watch |
 |---|---|
-| SEO | Lily Ray, Aleyda Solis, Kevin Indig, Marie Haynes, Cyrus Shepard, Tom Capper |
-| Paid Media | Jon Loomer, Andrew Foxwell, Aaron Levy, Savannah Sanchez |
-| Content | Andy Crestodina, Kaleigh Moore, Ross Simmonds, Amanda Natividad |
-| Design/UX | Vitaly Friedman, Jared Spool, Luke Wroblewski |
-| CRO/Web | Peep Laja, Brian Dean, Wil Reynolds |
-| Strategy | Rand Fishkin, Mark Ritson, Bob Hoffman, Scott Galloway |
-| AI in Marketing | Paul Roetzer, Christopher Penn, Liza Adams |
+| SEO | Lily Ray, Aleyda Solis, Kevin Indig, Marie Haynes, Cyrus Shepard, Tom Capper, Barry Schwartz, John Mueller |
+| Google Ads | Frederick Vallaeys, Aaron Levy, Brad Geddes, Kirk Williams, Navah Hopkins, Mike Rhodes |
+| Organic Social Media | Matt Navarra, Rachel Karten, Jasmine Star, Jay Baer, Amanda Natividad |
+| Paid Social Media | Jon Loomer, Andrew Foxwell, Savannah Sanchez, Sarah Sal, Tim Burd, Depesh Mandalia |
+| Website Development | Vitaly Friedman, Peep Laja, Brian Dean, Wil Reynolds, Addy Osmani, Una Kravets |
+| Branding | Mark Ritson, Bob Hoffman, Scott Galloway, Rand Fishkin, Emily Heyward, Marty Neumeier |
+| AI in Marketing | Paul Roetzer, Christopher Penn, Liza Adams, Jim Lecinski, Jaspar Carmichael-Jack, Sam Woods |
 
 ### Tier 2: Authoritative Publications & Sites
 Verified, industry-leading sources with editorial standards.
 
 | Vertical | Sources |
 |---|---|
-| SEO | Search Engine Journal, Search Engine Land, Moz Blog, Ahrefs Blog, Google Search Central Blog |
-| Paid Media | Social Media Examiner, AdExchanger, Marketing Land, Meta Business Blog |
-| Content | Content Marketing Institute, Copyblogger, Animalz Blog |
-| Design/UX | Smashing Magazine, Nielsen Norman Group, A List Apart |
-| Web/CRO | Web.dev, CXL, ConversionXL |
-| Strategy | Harvard Business Review (marketing), Marketing Week, Digiday |
-| AI | The Neuron, TLDR AI, Ben's Bites, Anthropic Blog, OpenAI Blog |
+| SEO | Search Engine Journal, Search Engine Land, Moz Blog, Ahrefs Blog, Google Search Central Blog, Semrush Blog |
+| Google Ads | Google Ads Blog, Search Engine Land (PPC), PPC Hero, WordStream Blog, Optmyzr Blog |
+| Organic Social Media | Social Media Examiner, Later Blog, Hootsuite Blog, Sprout Social Insights, Buffer Blog, platform-specific creator blogs |
+| Paid Social Media | AdExchanger, Meta Business Blog, Jon Loomer Blog, Social Media Examiner (paid), TikTok for Business Blog |
+| Website Development | Smashing Magazine, Web.dev, CXL, Nielsen Norman Group, A List Apart, CSS-Tricks |
+| Branding | Harvard Business Review (marketing), Marketing Week, Digiday, The Drum, Brand New (Under Consideration) |
+| AI in Marketing | The Neuron, TLDR AI, Ben's Bites, Anthropic Blog, OpenAI Blog, Marketing AI Institute, Import AI |
 
 ### Tier 3: Community & Emerging Signals
 Where raw, unfiltered discourse happens. Good for spotting trends early.
 
-- Reddit: r/SEO, r/PPC, r/digital_marketing, r/webdev, r/userexperience
+- Reddit: r/SEO, r/PPC, r/digital_marketing, r/webdev, r/socialmedia, r/branding, r/artificial
 - X/Twitter: Industry hashtags and expert accounts
 - Slack/Discord communities: Superpath, DGMG, Traffic Think Tank, Demand Curve
-- Podcasts: Marketing Over Coffee, Everyone Hates Marketers, The Search Engine Journal Show
+- Podcasts: Marketing Over Coffee, Everyone Hates Marketers, The Search Engine Journal Show, Marketing AI Show, The Google Ads Podcast
 
 ## How to Run a Scan
 
@@ -134,22 +134,22 @@ When it's time to compile (weekly or fortnightly), pull from the Newsletter Queu
 [2–3 biggest, most opinionated takeaways with our angle]
 
 ## By Vertical
-### SEO & Organic
+### SEO
 - [Signal + our take]
 
-### Paid Media
+### Google Ads
 - [Signal + our take]
 
-### Content & Copy
+### Organic Social Media
 - [Signal + our take]
 
-### Design & Creative
+### Paid Social Media
 - [Signal + our take]
 
-### Web & CRO
+### Website Development
 - [Signal + our take]
 
-### Strategy & Analytics
+### Branding
 - [Signal + our take]
 
 ### AI in Marketing
