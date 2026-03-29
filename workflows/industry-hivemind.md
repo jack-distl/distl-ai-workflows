@@ -52,10 +52,21 @@ The Hivemind pulls from four source channels, in priority order. The richest sig
 ### Source Channel 1: LinkedIn (Primary)
 LinkedIn is where industry experts share raw, real-time takes before they become polished blog posts. This is the most valuable signal source.
 
-**How to scan LinkedIn:**
-- If a LinkedIn MCP connector is available, use it to search posts by expert name, vertical keywords, and engagement levels
-- If no MCP connector, use web search with `site:linkedin.com/posts [expert name]` and `site:linkedin.com/pulse [topic]` to catch high-engagement public posts
-- Team members should actively drop LinkedIn posts into the Hivemind as they scroll (see "How the Team Contributes" below) — this human curation layer is critical because not all LinkedIn content gets indexed by search engines
+**How to scan LinkedIn (depends on available connectors):**
+
+**If LinkedIn MCP connector is installed** (see `tools/linkedin-connector.md`):
+- Use `get_person_profile` with `posts` section for each expert on the watchlist — this pulls their recent posts directly
+- This is the most reliable method — doesn't depend on search engine indexing
+- Run through the full expert watchlist for the vertical being scanned
+
+**If no LinkedIn MCP connector:**
+- Use web search with `site:linkedin.com/posts [expert name]` and `site:linkedin.com/pulse [topic]` to catch high-engagement public posts that have been indexed
+- This won't catch everything — many posts aren't indexed by search engines
+- Supplement heavily with team LinkedIn drops (see "How the Team Contributes")
+
+**Team LinkedIn drops (always, regardless of connector):**
+- Team members should actively drop LinkedIn posts into the Hivemind as they scroll — this human curation layer catches posts that neither web search nor scraping will find
+- Every team member should follow all experts on the watchlist on LinkedIn — their daily scroll becomes a passive scanning tool
 
 **What to look for on LinkedIn:**
 - Expert hot takes and opinion posts (not corporate announcements)
