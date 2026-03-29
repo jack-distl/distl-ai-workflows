@@ -88,77 +88,209 @@ Use `site:linkedin.com/posts [expert name]` and `site:linkedin.com/pulse [topic]
 - Read comment threads
 - Guarantee comprehensive coverage
 
-## Recommended Approach
+## Custom Distl LinkedIn MCP Server — Build Spec
 
-### Phase 1: Now (No Build Required)
-Use **Option 4 (web search proxy)** + **team LinkedIn drops** (human curation).
+Since the existing open-source options don't cover what the Hivemind needs (especially post search and comment threads), we're building our own.
 
-This is already built into the workflow. The team follows experts on LinkedIn, flags good posts to Claude via "add this to the hivemind", and Claude processes them. Web search with `site:linkedin.com` catches the high-engagement posts that get indexed.
+### Required MCP Tools
 
-**This covers ~60–70% of expert LinkedIn output.**
+The server should expose these tools for Claude to call during scans:
 
-### Phase 2: Quick Win (Minimal Build)
-Add **Option 1 (stickerdaniel/linkedin-mcp-server)** as an MCP connector.
+#### Tool 1: `get_expert_posts`
+**Purpose:** Pull recent posts from a specific expert by their LinkedIn profile URL or username.
 
-This lets Claude directly scrape each expert's profile and pull their recent posts during a scan. Instead of hoping web search indexed the post, we go straight to the source.
-
-**Setup steps:**
-1. Install the MCP server: `uvx linkedin-scraper-mcp`
-2. Log in with a Distl LinkedIn account: `uvx linkedin-scraper-mcp --login`
-3. Add to Claude: `claude mcp add linkedin-mcp-server -- uvx linkedin-scraper-mcp`
-4. Update the scan tool to use `get_person_profile` with `posts` section for each expert
-
-**This covers ~80–85% of expert LinkedIn output.** The gap is keyword-based discovery (finding new experts) and comment thread analysis.
-
-### Phase 3: Custom Build (If Needed)
-Build a custom LinkedIn scraping tool that can:
-- Search LinkedIn posts by keyword/topic
-- Pull comment threads from high-engagement posts
-- Discover new expert voices based on engagement patterns
-- Run on a schedule and cache results
-
-**Technical approach:**
-- Use Patchright or Playwright for browser automation (same approach as stickerdaniel's server)
-- Authenticate with a LinkedIn account
-- Build specific scraping functions:
-  - `search_posts(keyword, timeframe)` — Search LinkedIn's post search
-  - `get_post_comments(post_url)` — Pull comment threads
-  - `get_feed_posts(topic)` — Browse topic-filtered feeds
-  - `discover_experts(keyword, min_engagement)` — Find high-engagement posters on a topic
-- Wrap as an MCP server so Claude can call it during scans
-- Add rate limiting and session management to avoid LinkedIn blocks
-
-**Important considerations:**
-- LinkedIn actively fights scraping — expect captchas and blocks
-- Use delays between requests (2–5 seconds minimum)
-- Don't run more than ~50 profile scrapes per session
-- Rotate sessions or use persistent browser profiles
-- This approach is against LinkedIn's ToS — use at your own risk and keep volumes reasonable
-
-**This would cover ~95% of expert LinkedIn output.** The remaining 5% is LinkedIn-only content that requires being logged in and scrolling (which is where team drops fill the gap).
-
-## Recommendation
-
-**Start with Phase 2.** The stickerdaniel MCP server is a 10-minute setup, gives you direct access to expert posts, and doesn't require building anything. Run it alongside the web search proxy and team drops.
-
-Only move to Phase 3 if you find that Phases 1+2 aren't surfacing enough expert content — and even then, the custom build should be focused on the specific gaps (post search and comment threads), not a full LinkedIn scraper.
-
-## Updating the Scan Tool
-
-Once a LinkedIn MCP connector is installed, update the scan procedure:
-
-**During Step 1 (LinkedIn Expert Scan):**
-```
-For each expert in the watchlist for the vertical:
-1. Call get_person_profile(linkedin_url, sections=["posts"]) via MCP
-2. Extract their recent posts (last 14 days)
-3. For each post, capture:
-   - The post text (their actual words)
-   - Engagement metrics (likes, comments, shares)
-   - Date posted
-   - Any links or media shared
-4. Apply the Client Relevance Lens
-5. Log relevant signals to the Signal Feed
+**Input:**
+```json
+{
+  "profile_url": "string — LinkedIn profile URL (e.g. linkedin.com/in/lily-ray-44755615)",
+  "days_back": "number — How many days of posts to retrieve (default: 14)",
+  "include_reposts": "boolean — Whether to include reshares/reposts (default: false)"
+}
 ```
 
-This replaces the `site:linkedin.com` web search for known experts (keep web search for discovery of new voices).
+**Output:**
+```json
+{
+  "expert_name": "Lily Ray",
+  "headline": "VP, SEO Strategy & Research at Amsive",
+  "posts": [
+    {
+      "date": "2026-03-25",
+      "text": "Full post text content...",
+      "post_url": "https://linkedin.com/posts/...",
+      "likes": 342,
+      "comments": 87,
+      "shares": 45,
+      "media_type": "text | image | video | article | carousel",
+      "linked_url": "https://... (if they linked to an article/resource)",
+      "is_repost": false
+    }
+  ]
+}
+```
+
+**Why this matters:** This is the core tool. During a scan, Claude loops through the expert watchlist and pulls each person's recent posts. Without this, we're relying on web search indexing which misses ~30–40% of posts.
+
+#### Tool 2: `search_posts`
+**Purpose:** Search LinkedIn posts by keyword/topic to discover signals and new expert voices.
+
+**Input:**
+```json
+{
+  "query": "string — Search keywords (e.g. 'Google algorithm update', 'Meta ads creative')",
+  "days_back": "number — How far back to search (default: 14)",
+  "sort_by": "string — 'relevance' or 'date' (default: 'relevance')",
+  "min_engagement": "number — Minimum total reactions to filter noise (default: 50)",
+  "limit": "number — Max posts to return (default: 20)"
+}
+```
+
+**Output:**
+```json
+{
+  "query": "Google algorithm update",
+  "results": [
+    {
+      "author_name": "Lily Ray",
+      "author_headline": "VP, SEO Strategy & Research at Amsive",
+      "author_profile_url": "https://linkedin.com/in/...",
+      "date": "2026-03-25",
+      "text": "Post text...",
+      "post_url": "https://linkedin.com/posts/...",
+      "likes": 342,
+      "comments": 87,
+      "shares": 45
+    }
+  ]
+}
+```
+
+**Why this matters:** This is how we discover signals beyond our watchlist. We search by vertical topic and find who's saying what — including experts we haven't added to the watchlist yet.
+
+#### Tool 3: `get_post_comments`
+**Purpose:** Pull comment threads from a specific post. Comment threads often contain expert debates and counter-takes that are more valuable than the original post.
+
+**Input:**
+```json
+{
+  "post_url": "string — URL of the LinkedIn post",
+  "limit": "number — Max comments to return (default: 30)",
+  "sort_by": "string — 'relevance' or 'recent' (default: 'relevance')"
+}
+```
+
+**Output:**
+```json
+{
+  "post_url": "https://linkedin.com/posts/...",
+  "comments": [
+    {
+      "author_name": "Kevin Indig",
+      "author_headline": "Organic Growth Advisor",
+      "author_profile_url": "https://linkedin.com/in/...",
+      "text": "Comment text...",
+      "likes": 23,
+      "replies": [
+        {
+          "author_name": "Lily Ray",
+          "text": "Reply text...",
+          "likes": 12
+        }
+      ]
+    }
+  ]
+}
+```
+
+**Why this matters:** When Lily Ray posts about an algorithm update and Kevin Indig disagrees in the comments — that's gold for the Hivemind. These debates surface nuance that no article captures.
+
+#### Tool 4: `get_profile_summary` (Nice to Have)
+**Purpose:** Quick profile check for new expert discovery — when we find someone posting great content, pull their profile to assess credibility.
+
+**Input:**
+```json
+{
+  "profile_url": "string — LinkedIn profile URL"
+}
+```
+
+**Output:**
+```json
+{
+  "name": "string",
+  "headline": "string",
+  "location": "string",
+  "follower_count": "number",
+  "current_role": "string",
+  "company": "string",
+  "about_summary": "string"
+}
+```
+
+### Technical Considerations
+
+**Browser automation approach (Patchright/Playwright):**
+- Use persistent browser profiles to maintain login sessions
+- Serialise requests (one at a time) to avoid detection
+- Add random delays between requests (2–5 seconds)
+- Handle captcha challenges gracefully — pause and notify user rather than crashing
+- Session limit: ~50 requests per session before taking a break
+
+**Rate limiting:**
+- `get_expert_posts`: Max 40 per session (enough for the full watchlist across all verticals)
+- `search_posts`: Max 10 per session (one or two per vertical)
+- `get_post_comments`: Max 10 per session (only for high-value posts)
+- Build in automatic cooldowns between batches
+
+**Data freshness:**
+- Consider caching results for 24 hours — if the same expert was scraped today, return cached data
+- This reduces LinkedIn load and speeds up scans that span multiple verticals
+
+**Error handling:**
+- Captcha detected → pause, notify user, wait for manual resolution
+- Rate limited → back off exponentially, retry after delay
+- Profile not found → return empty result, don't crash
+- Session expired → attempt re-login, notify user if it fails
+
+### How It Integrates with the Scan
+
+Once the MCP server is running, the scan tool's Step 1 (LinkedIn Expert Scan) changes from web search proxying to direct calls:
+
+```
+For each vertical being scanned:
+
+1. EXPERT MONITORING (get_expert_posts)
+   For each expert on the watchlist for this vertical:
+   → Call get_expert_posts(profile_url, days_back=14)
+   → For each post returned:
+     - Apply Client Relevance Lens
+     - If relevant, add to Signal Feed with Channel: "LinkedIn (direct)"
+     - If post has 50+ comments, queue it for comment extraction
+
+2. TOPIC DISCOVERY (search_posts)
+   For the vertical's key topics:
+   → Call search_posts(query="[vertical topic]", min_engagement=50)
+   → For each result:
+     - Check if author is already on watchlist
+     - If not, assess if they should be added (get_profile_summary)
+     - Apply Client Relevance Lens
+     - If relevant, add to Signal Feed
+
+3. DEBATE EXTRACTION (get_post_comments)
+   For posts queued from step 1 with high comment counts:
+   → Call get_post_comments(post_url, limit=30)
+   → Look for:
+     - Other watchlist experts commenting (expert-to-expert discourse)
+     - Counter-arguments and disagreements
+     - Data or case studies shared in comments
+   → Add valuable comments as separate signals in the Signal Feed
+```
+
+### MCP Server Registration
+
+Once built, register with Claude:
+```bash
+claude mcp add distl-linkedin -- [command to start your server]
+```
+
+The tools will then be available to Claude during any session where the MCP server is connected.
