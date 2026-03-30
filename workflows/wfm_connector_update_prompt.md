@@ -110,6 +110,10 @@ The existing `create_job` tool has two issues:
 
 Without these fixes, jobs cannot be created via the API — they must be created manually in WFM.
 
+### 7. Fix `update_job` tool
+
+The existing `update_job` tool has the same field name mapping bug as `create_job`. Tested with updating `name` and `status` — neither value was applied. The API accepted the request (no error) but returned unchanged data, suggesting the connector is not mapping the parameter names to the WFM API's expected field names (e.g. `name` → `jobname`, `status` → `statusuuid`).
+
 ---
 
 ## Testing
