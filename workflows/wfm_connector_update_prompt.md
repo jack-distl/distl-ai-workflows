@@ -96,6 +96,22 @@ Removes a task from a job.
 | `create_job_task` | `POST v2/jobs/{id}/tasks` | Add task to job |
 | `delete_job_task` | `DELETE v2/jobs/tasks/{UUID}` | Remove from job |
 
+### 6. Fix `create_job` tool
+
+The existing `create_job` tool has two issues:
+
+**a) Field name mapping bug:** The tool sends `name` and `client_id` but the WFM API expects `jobname` and `clientuuid`. The connector needs to map these correctly.
+
+**b) Missing required fields:** The API requires `priority` (string, e.g. "Normal") and `statusuuid` (string, the job status UUID). These are not exposed as parameters. Either:
+- Add them as optional parameters with sensible defaults ("Normal" and the "In Progress" status UUID `9bef861f-0d89-4151-88ff-99fc9767277d`)
+- Or add a `template_id` lookup so templates can provide defaults
+
+**c) Template support:** The tool accepts `template_id` but there's no `list_templates` endpoint to discover available templates. Add a `list_job_templates` tool if the API supports it (`GET v2/jobs/templates` or similar).
+
+Without these fixes, jobs cannot be created via the API — they must be created manually in WFM.
+
+---
+
 ## Testing
 
 After adding the endpoints, test with this known job:
