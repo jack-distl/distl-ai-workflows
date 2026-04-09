@@ -18,8 +18,9 @@ On the 1st of each month, audit all WorkflowMax jobs completed in the previous c
 Calculate previous month date range (Step 1)
   |
   v
-list_jobs with completedAfter / completedBefore (Step 2)
-  |-- Paginate until all jobs collected
+list_jobs with reverse pagination (Step 2)
+  |-- Start from last page, work backward
+  |-- Filter by completedDate, stop when past target month
   |
   v
 get_job with includes=tasks for every job UUID (Step 3)
@@ -44,8 +45,10 @@ Output: Section 1 + Section 2 + Section 3 + Remediation Plan
 Calculate the first and last day of the **previous calendar month** based on today's date.
 
 **Example:** If today is 1 April 2026, the range is:
-- `completedAfter`: 2026-03-01
-- `completedBefore`: 2026-03-31
+- Start: `2026-03-01`
+- End: `2026-03-31`
+
+The target month prefix for filtering is `2026-03`.
 
 Do this calculation at the start of each run. Do not hardcode dates.
 
@@ -53,11 +56,25 @@ Do this calculation at the start of each run. Do not hardcode dates.
 
 ## Step 2: Get All Jobs Completed Last Month
 
-Call `list_jobs` with:
-- `completedAfter`: first day of previous month
-- `completedBefore`: last day of previous month
+Use **reverse pagination** to efficiently find recently completed jobs without fetching the entire job history.
 
-**Pagination:** Fetch all pages before proceeding. Do not stop at the first page. Collect the full list of job UUIDs and job numbers from all pages.
+### Why reverse pagination
+
+Completed jobs in WorkflowMax are returned in ascending date order. The most recent completions are on the last pages. The `list_jobs` connector does support `completed_after` / `completed_before` parameters for client-side filtering, but these require fetching all pages of completed jobs (~100+ pages for a mature account), which triggers API rate limits (429 errors). Reverse pagination avoids this by starting from the end and only fetching the 2–4 pages that contain the target month.
+
+### Procedure
+
+1. **Get the last page number.** Call `list_jobs` with `status=Completed` and `page=1` and `page_size=100`. The response includes a `total` field. Calculate the last page: `lastPage = ceil(total / 100)`.
+
+2. **Fetch the last page.** Call `list_jobs` with `status=Completed` and `page=lastPage` and `page_size=100`.
+
+3. **Filter and check.** From the returned jobs, collect any where `completedDate` starts with the target month prefix (e.g. `2026-03`). Also check whether the page contains jobs completed **before** the target month — if so, you have reached the boundary.
+
+4. **Page backward.** Fetch `page=lastPage - 1`, then `lastPage - 2`, etc. Continue until you reach a page where **all** jobs have a `completedDate` before the target month. At that point, stop — you have all the jobs.
+
+5. **Collect results.** Combine all matching jobs across the fetched pages. This is your full list of job UUIDs and job numbers for the month.
+
+**Typical volume:** Expect 50–150 completed jobs per month, usually spanning 2–4 pages near the end of the list.
 
 ---
 
@@ -175,7 +192,7 @@ For each item, suggest the likely owner based on other staff on the job where po
 
 1. **Date calculation:** Always derive the date range programmatically from today's date. If run on a day other than the 1st (e.g. manually triggered mid-month), still use the previous full calendar month.
 
-2. **Pagination:** Most months will have 50–150 completed jobs. Always fetch all pages from `list_jobs` before moving to Step 3.
+2. **Pagination:** Use reverse pagination as described in Step 2. Do not use `completed_after` / `completed_before` parameters — they fetch all completed job pages and trigger 429 rate limits on accounts with large job histories (10,000+ completed jobs). Reverse pagination typically needs only 2–4 page fetches.
 
 3. **Parallel batching:** With 75+ jobs, running `get_job` calls sequentially is too slow. Use parallel batches of ~10. If the connector enforces rate limits, reduce batch size and add a brief pause between batches.
 
